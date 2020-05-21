@@ -235,9 +235,6 @@ static void Algebra(Registry& reg, string grp)
  */
 static void Common(Registry& reg, string grp)
 {
-	//reg.add_function("PluginSaysHello", &PluginSaysHello, grp)
-	//	.add_function("PluginCrashes", &PluginCrashes, grp)
-	//	.add_function("PluginCrashesFatal", &PluginCrashesFatal, grp);
 
 	{
 		typedef BiotSubsetParameters T;
@@ -245,9 +242,15 @@ static void Common(Registry& reg, string grp)
 		string name = string("BiotSubsetParameters");
 		reg.add_class_<T>(name, grp)
 		    .add_constructor()
-			.add_constructor<void (*)(const char*,number, number, number, number, number, number)>("Function(s)#Subset(s)");
+			.add_constructor<void (*)(const char*,number, number, number, number, number, number)>("Subset(s)#...");
 			// .set_construct_as_smart_pointer(true);
 
+	}
+
+	{
+		// Bessel functions.
+		reg.add_function("BesselJ0", &BesselJ0, grp);
+		reg.add_function("BesselJ1", &BesselJ1, grp);
 	}
 }
 

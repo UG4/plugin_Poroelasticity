@@ -38,6 +38,9 @@
 #include <string.h>
 #include <vector>
 
+// Boost
+#include <boost/math/special_functions/bessel.hpp>
+
 // UG4 dependencies.
 #include "lib_disc/spatial_disc/domain_disc.h"
 #include "lib_disc/spatial_disc/elem_disc/elem_disc_interface.h"
@@ -58,6 +61,10 @@
 
 namespace ug {
 namespace BiotPlugin {
+
+//! Bessel functions
+double BesselJ0(double x);
+double BesselJ1(double x);
 
 
 //! Class for Biot parameters (per subset)
@@ -97,7 +104,7 @@ public:
 	number get_mu() const { return m_mu; }
 	void set_mu(number mu) { m_mu = mu; }
 
-	//! Fixed-stress beta
+	//! OPTIONAL: Fixed-stress beta
 	number get_beta() const { return m_beta_uzawa; }
 	void set_beta(number beta) { m_beta_uzawa = beta; }
 

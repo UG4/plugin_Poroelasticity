@@ -35,10 +35,17 @@
 namespace ug {
 namespace BiotPlugin {
 
+//! Bessel functions
+double BesselJ0(double x)
+{ return boost::math::cyl_bessel_j(0, x); }
+
+double BesselJ1(double x)
+{ return boost::math::cyl_bessel_j(1, x); }
+
 #ifdef WITH_JSON
 /**
 {
-	"subset" = "subset1",
+	"subsets" = "subset1, subset2",
 	"alpha" = 1.0,
 	"kappa" = 1.0,
 	"phi" = 0.0,

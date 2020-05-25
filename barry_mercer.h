@@ -116,8 +116,8 @@ public:
 	typedef StdGlobPosData<BarryMercerRefDispX, number, 2, void> pos_data_type;
 
 	//! CTOR
-	BarryMercerRefDispX (const BarryMercerData &dimCoeffs)
-	: m_nonDimData(), m_dimData(dimCoeffs) {}
+	BarryMercerRefDispX (const BarryMercerData &dimData)
+	: m_nonDimData(), m_dimData(dimData) {}
 
 	//! Define eval function.
 	inline void evaluate(number& p, const MathVector<2>& x, number time, int si) const
@@ -137,8 +137,8 @@ public:
 	typedef StdGlobPosData<BarryMercerRefDispY, number, 2, void> pos_data_type;
 
 	//! CTOR
-	BarryMercerRefDispY(const BarryMercerData &dimCoeffs)
-	: m_nonDimData(), m_dimData(dimCoeffs) {}
+	BarryMercerRefDispY(const BarryMercerData &dimData)
+	: m_nonDimData(), m_dimData(dimData) {}
 
 	//! Define eval function.
 	inline void evaluate(number& p, const MathVector<2>& x, number time, int si) const
@@ -170,7 +170,7 @@ public:
 		val = 2.0*beta_*sin(beta_*time);
 	}
 
-	double get_beta() const
+	inline double get_beta() const
 	{return m_beta;}
 
 protected:
@@ -248,7 +248,7 @@ public:
 	const int dim = TGridFunction::dim;
 
 	if (napprox<=0) return;
-	 UG_LOG ("NAPROX =" << napprox << std::endl);
+	 UG_LOG ("NAPPROX =" << napprox << std::endl);
 
 	 // VTK output.
 	 typedef VTKOutput<dim> TVTKOutput;

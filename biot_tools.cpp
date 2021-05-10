@@ -33,7 +33,7 @@
 #include "biot_tools.h"
 
 namespace ug {
-namespace BiotPlugin {
+namespace Poroelasticity {
 
 //! Bessel functions
 double BesselJ0(double x)

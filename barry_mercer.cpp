@@ -33,7 +33,7 @@
 #include "barry_mercer.h"
 
 namespace ug {
-namespace BiotPlugin{
+namespace Poroelasticity{
 
 const double BarryMercerNondimensional::X0 = 0.25;
 const double BarryMercerNondimensional::Y0 = 0.25;

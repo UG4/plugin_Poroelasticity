@@ -41,7 +41,7 @@
 #include "biot_tools.h"
 
 namespace ug {
-namespace BiotPlugin{
+namespace Poroelasticity{
 
 
 //! Non-dimensional solution.
@@ -387,7 +387,8 @@ public:
 		dd->add(m_pointSourceDisc.template cast_static<typename TDiracSourceDisc::base_type>());
 
 		// Add default stabilization.
-		if (base_type::m_uOrder ==  base_type::m_pOrder) {
+		const BiotDiscConfig& discretization = base_type::config();
+		if (discretization.m_uOrder ==  discretization.m_pOrder) {
 			base_type::add_stab_discs(dd, bSteadyStateMechanics);
 		}
 	}

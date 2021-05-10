@@ -30,6 +30,10 @@
  * GNU Lesser General Public License for more details.
  */
 
+
+
+#include <string>
+
 #include "bridge/util.h"
 
 // replace this with util_domain_dependent.h or util_algebra_dependent.h
@@ -38,8 +42,8 @@
 
 #include "common/ug_config.h"
 #include "common/error.h"
-#include <string>
 
+// Plugin stuff
 #include "biot_tools.h"
 #include "barry_mercer.h"
 
@@ -51,10 +55,10 @@ using namespace ug::bridge;
 #endif
 
 namespace ug{
-namespace BiotPlugin{
+namespace Poroelasticity{
 
 /** 
- *  \defgroup sample_plugin BiotPlugin
+ *  \defgroup Poroelasticity Poroelasticity
  *  \ingroup plugins
  *  This is a small sample plugin.
  *  \{
@@ -173,15 +177,29 @@ static void Domain(Registry& reg, string grp)
 	string tag = GetDomainTag<TDomain>();
 
 	{
+			typedef BiotElemDisc<TDomain> T;
+
+			string name = string("BiotElemDisc").append(suffix);
+			reg.add_class_<T>(name, grp)
+			   .add_constructor()
+			   .add_method("pressure_disc", &T::pressure_disc)
+			   .add_method("displacement_disc", &T::displacement_disc)
+			   .add_method("compression_linker", &T::compression_linker)
+			   .add_method("divergence", &T::divergence)
+
+			   .set_construct_as_smart_pointer(true);
+			reg.add_class_to_group(name, "BiotElemDisc", tag);
+
+		}
+	{
 		typedef BiotElemDiscFactory<TDomain> T;
+		typedef IElemDisc<TDomain> TElemDisc;
 
 		string name = string("BiotElemDiscFactory").append(suffix);
 		reg.add_class_<T>(name, grp)
-		   .add_constructor()
-					   // .template add_constructor<void (*)(std::string, std::string) >("")
-					   //  .add_method("add_boundary_conditions", static_cast<void (T::*)(SmartPtr<typename T::TDomainDisc>, bool)> (&T::add_boundary_conditions))
-		//.add_method("CreateElemDiscs", static_cast<void (T::*)(const BiotSubsetParameters &, SmartPtr<typename T::TElemDisc>, SmartPtr<typename T::TElemDisc>, bool)> (&T::CreateElemDiscs))
-		//.add_method("CreateElemDiscs", &T::CreateElemDiscs)
+			.template add_constructor<void (*)(const char*, int,
+					const char*, int, bool)>("")
+			.add_method("create_elem_discs", &T::create_elem_discs)
 		.set_construct_as_smart_pointer(true);
 		reg.add_class_to_group(name, "BiotElemDiscFactory", tag);
 
@@ -289,17 +307,17 @@ struct FunctionalityFor2D
 // end group sample_plugin
 /// \}
 
-}// end of namespace BiotPlugin
+}// end of namespace Poroelasticity
 
 
 /**
  * This function is called when the plugin is loaded.
  */
 extern "C" void
-InitUGPlugin_BiotPlugin(Registry* reg, string grp)
+InitUGPlugin_Poroelasticity(Registry* reg, string grp)
 {
-	grp.append("/BiotPlugin");
-	typedef BiotPlugin::Functionality Functionality;
+	grp.append("/Poroelasticity");
+	typedef Poroelasticity::Functionality Functionality;
 
 	try{
 		RegisterCommon<Functionality>(*reg,grp);
@@ -311,14 +329,14 @@ InitUGPlugin_BiotPlugin(Registry* reg, string grp)
 		// Register only for 2D/3D (cf. SmallStrainMechanics)
 		RegisterDomain2d3dDependent<Functionality>(*reg,grp);
 		RegisterDomain2d3dAlgebraDependent<Functionality>(*reg,grp);
-		RegisterDomain2dAlgebraDependent<BiotPlugin::FunctionalityFor2D>(*reg,grp);
+		RegisterDomain2dAlgebraDependent<Poroelasticity::FunctionalityFor2D>(*reg,grp);
 
 	}
 	UG_REGISTRY_CATCH_THROW(grp);
 }
 
 extern "C" UG_API void
-FinalizeUGPlugin_BiotPlugin()
+FinalizeUGPlugin_Poroelasticity()
 {
 }
 

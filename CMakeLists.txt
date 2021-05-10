@@ -36,7 +36,7 @@
 ################################################################################
 
 # Name of your plugin and sources.
-set(pluginName	BiotPlugin)
+set(pluginName	Poroelasticity)
 set(SOURCES	biot_plugin.cpp biot_tools.cpp barry_mercer.cpp)
 
 

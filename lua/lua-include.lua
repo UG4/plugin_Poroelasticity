@@ -38,7 +38,7 @@ return approxSpace
 end 
 
 
-function util.biot.CreateErrorEst(dim)
+function util.biot.CreateDefaultErrorEst(dim)
   local biotErrorEst 
 
   biotErrorEst = ScaledGridFunctionEstimator()
@@ -47,5 +47,6 @@ function util.biot.CreateErrorEst(dim)
   biotErrorEst:add(H1SemiComponentSpace("ux", 4))  
   biotErrorEst:add(H1SemiComponentSpace("uy", 4)) 
   if (dim==3) then biotErrorEst:add(H1SemiComponentSpace("uz", 4)) end
+  return biotErrorEst
 end
 

@@ -45,7 +45,7 @@ set(SOURCES	biot_plugin.cpp biot_tools.cpp barry_mercer.cpp)
 ################################################################################
 cmake_minimum_required(VERSION 2.6)
 
-find_package(nlohmann_json 3.2.0 REQUIRED)
+find_package(nlohmann_json 3.2.0)
 
 project(UG_PLUGIN_${pluginName})
 
@@ -60,5 +60,6 @@ else(buildEmbeddedPlugins)
 	# and additional libraries
 	add_library(${pluginName} SHARED ${SOURCES})
 	link_directories(${UG_ROOT_PATH}/bin/plugins)
-	target_link_libraries (${pluginName} PRIVATE nlohmann_json::nlohmann_json ug4 ConvectionDiffusion SmallStrainMechanics ) 
+	# target_link_libraries (${pluginName} PRIVATE nlohmann_json::nlohmann_json ug4 ConvectionDiffusion SmallStrainMechanics ) 
+	target_link_libraries (${pluginName} PRIVATE ug4 ConvectionDiffusion SmallStrainMechanics )
 endif(buildEmbeddedPlugins)

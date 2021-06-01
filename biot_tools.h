@@ -188,10 +188,12 @@ public:
 	BiotElemDisc(SmartPtr<TConvectionDiffusion> pDisc, SmartPtr<TSmallStrainMechanics> uDisc)
 	: flowEqDisc(pDisc), displacementEqDisc(uDisc) {}
 
-	SmartPtr<TConvectionDiffusion> pressure_disc()
+	// SmartPtr<TConvectionDiffusion> pressure_disc()
+ 	SmartPtr<TElemDisc> pressure_disc()
 	{return flowEqDisc; }
 
-	SmartPtr<TSmallStrainMechanics> displacement_disc()
+	// SmartPtr<TSmallStrainMechanics> displacement_disc()
+	SmartPtr<TElemDisc> displacement_disc()
 	{return displacementEqDisc; }
 
 	ConstSmartPtr<TScaleAddLinkerNumber> compression_linker()

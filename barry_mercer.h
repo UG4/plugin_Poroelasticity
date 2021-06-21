@@ -35,148 +35,15 @@
 
 #include "lib_disc/io/vtkoutput.h" // VTKOutput
 #include "lib_disc/function_spaces/interpolate.h" // Interpolate
+
 #include "lib_disc/spatial_disc/elem_disc/dirac_source/lagrange_dirac_source.h"
 #include "lib_disc/spatial_disc/constraints/dirichlet_boundary/lagrange_dirichlet_boundary.h"
 
+#include "barry_mercer_data.h"
 #include "biot_tools.h"
 
 namespace ug {
 namespace Poroelasticity{
-
-
-//! Non-dimensional solution.
-class BarryMercerNondimensional {
-
-public:
-	double Pressure2D(double x, double y, double t) const;
-	double VelX2D(double x, double y, double t) const;
-	double VelY2D(double x, double y, double t) const;
-	static const size_t NAPPROX;
-
-protected:
-	double FourierCoeff_P(int n, int q, double t_norm) const;
-
-	static const double m_PI;
-
-	static const double X0;
-	static const double Y0;
-
-};
-
-//! Dimensional coefficients for Barry-Mercer benchmark.
-struct BarryMercerData
-{
-public:
-	BarryMercerData () : a(1.0), b(1.0), tchar(1.0) {}
-	BarryMercerData (double tchar_, double lamdda_, double mu_)
-	: a(1.0), b(1.0), tchar(tchar_),
-	  lambda(lamdda_), mu(mu_) {}
-
-	double a;
-	double b;
-	double tchar;
-
-	double lambda;
-	double mu;
-};
-
-
-
-//! Evaluate reference pressure.
-class BarryMercerRefPressure
-: public StdGlobPosData<BarryMercerRefPressure, number, 2, void>
-{
-public:
-	//! Export base type
-	typedef StdGlobPosData<BarryMercerRefPressure, number, 2, void> pos_data_type;
-
-	//! CTOR
-	BarryMercerRefPressure (const BarryMercerData &dimCoeffs)
-	: m_nonDimData(), m_dimData(dimCoeffs) {}
-
-	//! Define eval function.
-	inline void evaluate(number& p, const MathVector<2>& x, number time, int si) const
-	{
-		p = m_nonDimData.Pressure2D(x[0]/m_dimData.a, x[1]/m_dimData.b, time/m_dimData.tchar);
-		p *= (m_dimData.lambda + 2.0 *m_dimData.mu);
-	}
-
-protected:
-	const BarryMercerNondimensional m_nonDimData;
-	const BarryMercerData &m_dimData;
-};
-
-
-//! Evaluate reference pressure.
-class BarryMercerRefDispX
-: public StdGlobPosData<BarryMercerRefDispX, number, 2, void>
-{
-public:
-	//! Export base type
-	typedef StdGlobPosData<BarryMercerRefDispX, number, 2, void> pos_data_type;
-
-	//! CTOR
-	BarryMercerRefDispX (const BarryMercerData &dimData)
-	: m_nonDimData(), m_dimData(dimData) {}
-
-	//! Define eval function.
-	inline void evaluate(number& p, const MathVector<2>& x, number time, int si) const
-	{ p = m_nonDimData.VelX2D(x[0]/m_dimData.a, x[1]/m_dimData.b, time/m_dimData.tchar); }
-
-protected:
-	const BarryMercerNondimensional m_nonDimData;
-	const BarryMercerData &m_dimData;
-};
-
-//! Evaluate reference pressure.
-class BarryMercerRefDispY
-: public StdGlobPosData<BarryMercerRefDispY, number, 2, void>
-{
-public:
-	//! Export base type
-	typedef StdGlobPosData<BarryMercerRefDispY, number, 2, void> pos_data_type;
-
-	//! CTOR
-	BarryMercerRefDispY(const BarryMercerData &dimData)
-	: m_nonDimData(), m_dimData(dimData) {}
-
-	//! Define eval function.
-	inline void evaluate(number& p, const MathVector<2>& x, number time, int si) const
-	{ p = m_nonDimData.VelY2D(x[0]/m_dimData.a, x[1]/m_dimData.b, time/m_dimData.tchar); }
-
-protected:
-	const BarryMercerNondimensional m_nonDimData;
-	const BarryMercerData &m_dimData;
-};
-
-
-
-//! This defines a point source as 'StdGlobPosData'
-class BarryMercerPointSource
-: public StdGlobPosData<BarryMercerPointSource, number, 2, void>
-{
-public:
-	//! Export base type
-	typedef StdGlobPosData<BarryMercerPointSource, number, 2, void> pos_data_type;
-
-	//! CTOR
-	BarryMercerPointSource (const double consolidation)
-	: m_nonDimData(), m_beta(consolidation) {}
-
-	//! Define eval function.
-	inline void evaluate(number& val, const MathVector<2>& x, number time, int si) const
-	{
-		double beta_ = get_beta();
-		val = 2.0*beta_*sin(beta_*time);
-	}
-
-	inline double get_beta() const
-	{return m_beta;}
-
-protected:
-	const BarryMercerNondimensional m_nonDimData;
-	double m_beta;
-};
 
 
 
@@ -326,8 +193,12 @@ public:
 
 	typedef BiotProblem<TDomain,TAlgebra> base_type;
 	typedef DomainDiscretization<TDomain,TAlgebra> TDomainDisc;
+
+private:
 	typedef DiracSourceDisc<TDomain> TDiracSourceDisc;
 	typedef DirichletBoundary<TDomain,TAlgebra> TDirichletBoundary;
+
+public:
 
 	BarryMercerProblem(const char* uCmp, const char *pCmp)
 	: base_type(uCmp, pCmp, "../grids/barrymercer2D-tri.ugx"), m_a(1.0), m_b(1.0)
@@ -355,28 +226,16 @@ public:
 	}
 
 
-	virtual ~BarryMercerProblem() {
-	//	m_pointSourceDisc = SPNULL;
-	//	m_spDirichlet = SPNULL;
-	}
+	virtual ~BarryMercerProblem() {}
 
 
-
-	//! This defines the point singularity (Note: time should be selected according to char_time!)
-	/*double DiracSource2D(double x, double y, double t, int si)
-	{
-		double _beta = get_beta();
-		return 2.0*_beta*sin(_beta*t);   //  -- rescaling time to [0,2*PI]
-	}
-*/
-	virtual void add_elem_discs(SmartPtr<TDomainDisc> dd, bool bSteadyStateMechanics=true) override
+	void add_elem_discs(SmartPtr<TDomainDisc> dd, bool bSteadyStateMechanics=true) override
 	{
 		// Add default Biot discs.
 		base_type::add_elem_discs(dd, bSteadyStateMechanics);
 
-		// Add point source
-		SmartPtr<TDiracSourceDisc> m_pointSourceDisc;
-	    m_pointSourceDisc = make_sp(new TDiracSourceDisc("p", "SINGULARITY"));
+		// Add point source.
+		SmartPtr<TDiracSourceDisc> m_pointSourceDisc = make_sp(new TDiracSourceDisc("p", "SINGULARITY"));
 
 	    double beta = base_type::m_params[0].get_kappa()*( base_type::m_params[0].get_lambda() + 2* base_type::m_params[0].get_mu());
 	    SmartPtr<BarryMercerPointSource::pos_data_type> m_pointSourceFunc;
@@ -422,8 +281,7 @@ protected:
 
 	/// Inverse of consolidation coefficient.
 	double get_beta() const {
-		using base_type::m_params;
-		return m_params[0].get_kappa()*(m_params[0].get_lambda() + 2*m_params[0].get_mu());
+		return  base_type::m_params[0].get_kappa()*( base_type::m_params[0].get_lambda() + 2*base_type::m_params[0].get_mu());
 	}
 
 protected:

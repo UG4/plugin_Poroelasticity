@@ -30,7 +30,7 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "barry_mercer.h"
+#include "barry_mercer_data.h"
 
 namespace ug {
 namespace Poroelasticity{

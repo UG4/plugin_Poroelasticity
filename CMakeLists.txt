@@ -37,7 +37,7 @@
 
 # Name of your plugin and sources.
 set(pluginName	Poroelasticity)
-set(SOURCES	biot_plugin.cpp biot_tools.cpp barry_mercer.cpp)
+set(SOURCES	biot_tools.cpp barry_mercer_data.cpp biot_plugin.cpp)
 
 
 ################################################################################
@@ -45,7 +45,17 @@ set(SOURCES	biot_plugin.cpp biot_tools.cpp barry_mercer.cpp)
 ################################################################################
 cmake_minimum_required(VERSION 2.6)
 
-find_package(nlohmann_json 3.2.0)
+
+# 
+
+# JSON should be found by ugcore
+
+
+if (NOT ${nlohmann_json_FOUND})
+	find_package(nlohmann_json QUIET 3.2.0)
+endif (NOT ${nlohmann_json_FOUND})
+
+message(STATUS "JSON found=" ${nlohmann_json_FOUND} ${nlohmann_json_INCLUDES})
 
 project(UG_PLUGIN_${pluginName})
 
@@ -57,9 +67,9 @@ if(buildEmbeddedPlugins)
 	EXPORTSOURCES(${CMAKE_CURRENT_SOURCE_DIR} ${SOURCES})
 else(buildEmbeddedPlugins)
 	# create a shared library from the sources and link it against ug4.
+	#target_include_directories(${pluginName} )
 	# and additional libraries
 	add_library(${pluginName} SHARED ${SOURCES})
 	link_directories(${UG_ROOT_PATH}/bin/plugins)
-	# target_link_libraries (${pluginName} PRIVATE nlohmann_json::nlohmann_json ug4 ConvectionDiffusion SmallStrainMechanics ) 
 	target_link_libraries (${pluginName} PRIVATE ug4 ConvectionDiffusion SmallStrainMechanics )
 endif(buildEmbeddedPlugins)

@@ -46,18 +46,21 @@ set(SOURCES	biot_tools.cpp barry_mercer_data.cpp biot_plugin.cpp)
 cmake_minimum_required(VERSION 2.6)
 
 
-# 
 
 # JSON should be found by ugcore
-
-
 if (NOT ${nlohmann_json_FOUND})
 	find_package(nlohmann_json QUIET 3.2.0)
 endif (NOT ${nlohmann_json_FOUND})
 
 message(STATUS "JSON found=" ${nlohmann_json_FOUND} ${nlohmann_json_INCLUDES})
 
+# Enable C++-14 (for Boost on Intel)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
 project(UG_PLUGIN_${pluginName})
+
 
 # include the definitions and dependencies for ug-plugins.
 include(${UG_ROOT_CMAKE_PATH}/ug_plugin_includes.cmake)

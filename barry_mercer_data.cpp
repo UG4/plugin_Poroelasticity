@@ -38,7 +38,7 @@ namespace Poroelasticity{
 const double BarryMercerNondimensional::X0 = 0.25;
 const double BarryMercerNondimensional::Y0 = 0.25;
 const double BarryMercerNondimensional::m_PI = ug::PI;
-const size_t BarryMercerNondimensional::NAPPROX = 512;
+const size_t BarryMercerNondimensional::NAPPROX = 256;
 
 
 //! Computes coefficient from Eq. (24) in Barry & Mercer, ACME, 1999 (for $\omega=1)

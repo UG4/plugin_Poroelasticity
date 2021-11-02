@@ -33,12 +33,6 @@
 #ifndef POROELASTICITY_BARRY_MERCER_DATA_H_
 #define POROELASTICITY_BARRY_MERCER_DATA_H_
 
-//#include "lib_disc/io/vtkoutput.h" // VTKOutput
-//#include "lib_disc/function_spaces/interpolate.h" // Interpolate
-
-//#include "lib_disc/spatial_disc/elem_disc/dirac_source/lagrange_dirac_source.h"
-//#include "lib_disc/spatial_disc/constraints/dirichlet_boundary/lagrange_dirichlet_boundary.h"
-
 #include "biot_tools.h"
 
 namespace ug {

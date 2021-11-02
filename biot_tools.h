@@ -358,7 +358,6 @@ public:
 	/// DTOR
 	virtual ~BiotProblem() {}
 
-
 	// get grid name
 	const char* get_gridname() const { return m_gridname.c_str();}
 
@@ -396,6 +395,11 @@ public:
 		return tchar;
 	}
 
+	virtual double start_time()
+	{ return 0.0; }
+
+	virtual double end_time()
+	{ return 2.0*get_char_time(); }
 
 
 	/// Adding all elem discs to domain disc.

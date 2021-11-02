@@ -203,14 +203,14 @@ public:
 	BarryMercerProblem(const char* uCmp, const char *pCmp)
 	: base_type(uCmp, pCmp, "../grids/barrymercer2D-tri.ugx"), m_a(1.0), m_b(1.0)
 	{
-		 double E = 1e+5; // Young's elasticity modulus [Pa]
-		 double nu = 0.4;        // Poisson"s ratio  [1]
+		 double E = 1e+5; 		// Young's elasticity modulus [Pa]
+		 double nu = 0.4;       // Poisson's ratio  [1]
 
 		 double lambda = (E*nu)/((1.0+nu)*(1.0-2.0*nu));
 		 double mu = 0.5*E/(1+nu);
 
-		 double kappa = 1e-5;   // permeability [m*m]
-	     double muf = 1e-3;       // Pa*s    => Diff Coeff 1e-9
+		 double kappa = 1e-5;  	// Permeability [m*m]
+	     double muf = 1e-3;     // Pa*s    => Diff Coeff 1e-9
 		 double alpha = 1.0;
 
 
@@ -222,12 +222,16 @@ public:
 		 base_type::m_params.resize(1);
 		 base_type::m_params[0]=BiotSubsetParameters("INNER", alpha, kappa/muf, 0.0, lambda, mu, beta_uzawa);
 
-
 	}
 
 
 	virtual ~BarryMercerProblem() {}
 
+	double start_time() override
+	{ return 0.0; }
+
+	double end_time() override
+	{ return 2.0*M_PI*base_type::get_char_time(); }
 
 	void add_elem_discs(SmartPtr<TDomainDisc> dd, bool bSteadyStateMechanics=true) override
 	{
@@ -280,7 +284,7 @@ public:
 protected:
 
 	/// Inverse of consolidation coefficient.
-	double get_beta() const {
+	double default_beta() const {
 		return  base_type::m_params[0].get_kappa()*( base_type::m_params[0].get_lambda() + 2*base_type::m_params[0].get_mu());
 	}
 

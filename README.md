@@ -5,6 +5,7 @@
 Copyright:
 
 2019-2020 Goethe Center for Scientific Computing, University Frankfurt
+
 2022-2024 Modular Supercomputing and Quantum Computing, University Frankfurt
 
 ## References

@@ -1,6 +1,7 @@
 util.biot = util.biot or {}
 
-
+print("Loading LUA/Poroelasticity.\n")
+ 
 function util.biot.PrintDebug(text)
   print("LUA/Poroelasticity:\t"..text)
 end

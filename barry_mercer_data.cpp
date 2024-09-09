@@ -31,6 +31,7 @@
  */
 
 #include "barry_mercer_data.h"
+#include <boost/lexical_cast.hpp>
 
 namespace ug {
 namespace Poroelasticity{
@@ -38,28 +39,7 @@ namespace Poroelasticity{
 const double BarryMercerNondimensional::X0 = 0.25;
 const double BarryMercerNondimensional::Y0 = 0.25;
 const double BarryMercerNondimensional::m_PI = ug::PI;
-const size_t BarryMercerNondimensional::NAPPROX = 256;
-
-
-//! Computes coefficient from Eq. (24) in Barry & Mercer, ACME, 1999 (for $\omega=1)
-double BarryMercerNondimensional::FourierCoeff_P(int n, int q, double t_hat) const
-{
- //  double beta = BARRY_MERCER_DATA.BETA
-  double x0= X0;
-  double y0= Y0;
-
-  if ((n%4==0) || (q%4==0)) { return 0.0; }
-
-  double lambda_n = n*m_PI;
-  double lambda_q = q*m_PI;
-  double _lambda_nq = lambda_n*lambda_n + lambda_q*lambda_q;
-
-  double val1 = -2.0 * sin(lambda_n*x0) * sin(lambda_q*y0);
-  double val2 = (_lambda_nq*sin(t_hat) - cos(t_hat) + exp(-_lambda_nq*t_hat));
-  double val3 = (1 + _lambda_nq*_lambda_nq);
-
-  return (val1*val2)/val3;
-}
+const size_t BarryMercerNondimensional::NAPPROX = 512;
 
 
 //! double t_hat = m_beta*t;
@@ -68,33 +48,37 @@ double BarryMercerNondimensional::FourierCoeff_P(int n, int q, double t_hat) con
 double BarryMercerNondimensional::Pressure2D(double x, double y, double t_hat) const
 {
 
-  int N = NAPPROX;
+  const int N = NAPPROX;
 
-  double x0 = X0;
-  double y0= Y0;
+  //double x0 = X0;
+  //double y0= Y0;
 
   double sinbt = sin(t_hat);
   double cosbt = cos(t_hat);
 
   double pp = 0.0;
 
-   for (int m=2; m<=N ; ++m) {
+  const int m = N;
+  // ALT: for (int m=2; m<=N ; ++m) {
       for (int k=1; k <= m-1; ++k) {
 
-    	  double lambda_k = k*m_PI;
-    	  double sinkx = sin(m_PI*k*x);
+    	 // const double lambda_k = k*m_PI;
+    	  const double sinkx = sin(m_PI*k*x);
 
+    	  for (int q=1; q <= m-1; ++q) {
+    	 // ALT:  const int q = m-k;
+    	  //const double lambda_q = q*m_PI;
+    	  const double sinqy = sin(m_PI*q*y);
 
-    	  int q = m-k;
-    	  double lambda_q = q*m_PI;
-    	  double sinqy = sin(m_PI*q*y);
-
-    	  double _coeff_kq = FourierCoeff_P(k,q, t_hat);
+    	  const double _coeff_kq = FourierCoeff_P(k,q, t_hat);
+    	  //  std::cout << k<< "," << q << ":" << boost::lexical_cast<string>(_coeff_kq) << std::endl;
        //-- print ("x= ("..x..", "..y.."\tn="..n.."q="..q..",m="..m.."), c=".._coeff_nq.."\t"..sinnx.."\t"..sinqy.."=> \tpp="..pp.."\tupdate=".._coeff_nq * sinnx * sinqy)
     	  pp += _coeff_kq * sinkx * sinqy;
     }
+
    // -- print("break: "..sinnx)
-    }
+  }
+
 //  -- print ("x= ("..t..","..t_hat..","..x..","..y..")"..pp)
   return -4.0*pp;
 }

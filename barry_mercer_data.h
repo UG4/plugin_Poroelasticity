@@ -49,14 +49,33 @@ public:
 	static const size_t NAPPROX;
 
 protected:
-	double FourierCoeff_P(int n, int q, double t_norm) const;
+	//! Compute coefficient from Eq. (24) in Barry & Mercer, ACME, 1999 (for $\omega=1).
+	inline double FourierCoeff_P(int n, int q, double t_hat) const
+	{
+
+	  if ((n%4==0) || (q%4==0)) { return 0.0; }
+
+	  const double lambda_n = n*m_PI;
+	  const double lambda_q = q*m_PI;
+	  const double _lambda_nq = lambda_n*lambda_n + lambda_q*lambda_q;
+
+	  const double val1 = -2.0 * sin(lambda_n*X0) * sin(lambda_q*Y0);
+	  const double val2 = (_lambda_nq*sin(t_hat) - cos(t_hat) + exp(-_lambda_nq*t_hat));
+	  const double val3 = (1 + _lambda_nq*_lambda_nq);
+
+	  return (val1*val2)/val3;
+	}
 
 	static const double m_PI;
-
 	static const double X0;
 	static const double Y0;
 
 };
+
+
+
+
+
 
 //! Dimensional coefficients for Barry-Mercer benchmark.
 struct BarryMercerData

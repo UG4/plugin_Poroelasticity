@@ -139,7 +139,7 @@ static void DomainAlgebra(Registry& reg, string grp)
 		string name = string("BiotProblem").append(suffix);
 		reg.add_class_<T>(name, grp)
 		   .template add_constructor<void (*)(const char*,const char*,const char*)>("ucmp(s)#pcmp(s)")
-		   .template add_constructor<void (*)(const char*,int,const char*,int,const char*)>("ucmp(s)#uorder#pcmp(s)#porder")
+		   .template add_constructor<void (*)(const BiotDiscConfig&, const char*)>("ucmp(s)#uorder#pcmp(s)#porder")
 		   .add_method("get_uorder", &T::get_uorder)
 		   .add_method("get_porder", &T::get_porder)
 		   .add_method("get_gridname", &T::get_gridname)
@@ -255,16 +255,19 @@ static void Algebra(Registry& reg, string grp)
  */
 static void Common(Registry& reg, string grp)
 {
-
 	{
 		typedef BiotSubsetParameters T;
-
 		string name = string("BiotSubsetParameters");
 		reg.add_class_<T>(name, grp)
 		    .add_constructor()
 			.add_constructor<void (*)(const char*,number, number, number, number, number, number)>("Subset(s)#...");
-			// .set_construct_as_smart_pointer(true);
+	}
 
+	{
+		typedef BiotDiscConfig T;
+		string name = string("BiotDiscConfig");
+		reg.add_class_<T>(name, grp)
+		   .add_constructor<void (*)(const char*, int, const char *, int,  double)>("Subset(s)#...");
 	}
 
 	{
@@ -293,12 +296,9 @@ struct FunctionalityFor2D
 
 			string name = string("BarryMercerProblem").append(suffix);
 			reg.add_class_<T,TBase>(name, grp)
-				.template add_constructor<void (*)(const char*,const char*)>("ucmp(s)#pcmp(s)")
-			 //  .template add_constructor<void (*)(const char*,int,const char*,int)>("ucmp(s)#uorder#pcmp(s)#porder")
-			  // .add_method("add_elem_discs", &T::add_elem_discs)
-
-			 //  .add_method("add_uzawa_discs", &T::add_stab_discs)
-			 //  .add_method("add_boundary_conditions", static_cast<void (T::*)(SmartPtr<typename T::TDomainDisc>, bool)> (&T::add_boundary_conditions))
+			   .template add_constructor<void (*)(const char*,const char*)>("ucmp(s)#pcmp(s)")
+			   .template add_constructor<void (*)(const BiotDiscConfig&)>("ucmp(s)#uorder#pcmp(s)#porder")
+			   .add_method("set_skip", &T::set_skip)
 			   .set_construct_as_smart_pointer(true);
 			reg.add_class_to_group(name, "BarryMercerProblem", tag);
 

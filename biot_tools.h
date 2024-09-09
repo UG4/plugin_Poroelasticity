@@ -78,6 +78,9 @@ struct BiotDiscConfig
 	BiotDiscConfig(const char* uCmp, int uorder, const char *pCmp, int porder)
 	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(uorder), m_pOrder(porder), m_dStab(0.0), m_bSteadyStateMechanics(true) {}
 
+	BiotDiscConfig(const char* uCmp, int uorder, const char *pCmp, int porder, double dStab)
+	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(uorder), m_pOrder(porder), m_dStab(dStab), m_bSteadyStateMechanics(true) {}
+
 	BiotDiscConfig(const char* uCmp, int uorder, const char *pCmp, int porder, bool bSteadyStateMechanics)
 	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(uorder), m_pOrder(porder), m_dStab(0.0), m_bSteadyStateMechanics(bSteadyStateMechanics) {}
 
@@ -352,8 +355,8 @@ public:
 	: m_config(uCmp, pCmp), m_gridname(gridname) {}
 
 	/// CTOR (full)
-	BiotProblem(const char* uCmp, int uorder, const char *pCmp, int porder, const char *gridname)
-	: m_config(uCmp, uorder, pCmp, porder), m_gridname(gridname)  {}
+	BiotProblem(const BiotDiscConfig& config, const char *gridname)
+	: m_config(config), m_gridname(gridname)  {}
 
 	/// DTOR
 	virtual ~BiotProblem() {}

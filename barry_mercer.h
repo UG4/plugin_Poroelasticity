@@ -49,7 +49,7 @@ namespace Poroelasticity{
 
 //! Auxiliary class for compution errors as 'StdGlobPosData'.
 template <class TGridFunction>
-class BerryMercerErrorData {
+class BarryMercerErrorData {
 
 	enum normTypes {L2NORM_P=0, L2NORM_UX, L2NORM_UY, H1SEMI_UX, H1SEMI_UY, _SIZE};
 
@@ -138,6 +138,7 @@ public:
 	 Interpolate(m_spDispY, uref, "uy", mandatory_subsets, time);
 
 	 // Print solution.
+	 vtk.print("BarryMercer2D_Sol.vtu", u, step, time);
 	 vtk.print("BarryMercer2D_Ref.vtu", *uref, step, time);
 
 	 // Compute norms.
@@ -201,7 +202,24 @@ private:
 public:
 
 	BarryMercerProblem(const char* uCmp, const char *pCmp)
-	: base_type(uCmp, pCmp, "../grids/barrymercer2D-tri.ugx"), m_a(1.0), m_b(1.0)
+	: base_type(uCmp, pCmp, "../grids/barrymercer2D-tri.ugx"), m_a(1.0), m_b(1.0), nskip(1)
+	{
+		set_default_parameters();
+	}
+
+	BarryMercerProblem(const BiotDiscConfig& config)
+	: base_type(config, "../grids/barrymercer2D-tri.ugx"), m_a(1.0), m_b(1.0), nskip(1)
+	{
+		set_default_parameters();
+	}
+
+
+	virtual ~BarryMercerProblem() {}
+
+
+protected:
+
+	void set_default_parameters()
 	{
 		 double E = 1e+5; 		// Young's elasticity modulus [Pa]
 		 double nu = 0.4;       // Poisson's ratio  [1]
@@ -210,22 +228,21 @@ public:
 		 double mu = 0.5*E/(1+nu);
 
 		 double kappa = 1e-5;  	// Permeability [m*m]
-	     double muf = 1e-3;     // Pa*s    => Diff Coeff 1e-9
+		 double muf = 1e-3;     // Pa*s    => Diff Coeff 1e-9
 		 double alpha = 1.0;
 
-
-		 double Kcomp = E/(3*(1-2*nu)); // compression (or bulk) modulus)
+		 //double Kcomp = E/(3*(1-2*nu)); // compression (or bulk) modulus)
 		 double Kv = 2.0*E/(1+nu)*(1.0-nu)/(1.0-2.0*nu)  ; // uni-axial drained bulk modulus
 
 		 double beta_uzawa=(alpha*alpha)/Kv*(2.0-2.0*nu);
 
 		 base_type::m_params.resize(1);
 		 base_type::m_params[0]=BiotSubsetParameters("INNER", alpha, kappa/muf, 0.0, lambda, mu, beta_uzawa);
-
 	}
 
+public:
 
-	virtual ~BarryMercerProblem() {}
+
 
 	double start_time() override
 	{ return 0.0; }
@@ -276,10 +293,15 @@ public:
 	/// Post-processing (per time step)
 	bool post_processing(SmartPtr<typename base_type::TGridFunction> u, size_t step, double time) override
 	{
+		if ((step-1) % nskip !=0 ) return true; // Execute first n
+
 		BarryMercerData dimData( base_type::get_char_time(), base_type::m_params[0].get_lambda(), base_type::m_params[0].get_mu());
 		m_errData.eval(dimData, *u, step, time);
 		return true;
 	}
+
+	void set_skip(size_t skip)
+	{ nskip = skip; }
 
 protected:
 
@@ -292,10 +314,10 @@ protected:
 	double m_a;
 	double m_b;
 
+	size_t nskip;
 
-	BerryMercerErrorData<typename base_type::TGridFunction> m_errData;
-	// SmartPtr<typename TDirichletBoundary::base_type> m_spDirichlet;
 
+	BarryMercerErrorData<typename base_type::TGridFunction> m_errData;
 
 };
 }

@@ -54,8 +54,7 @@
 #include "../SmallStrainMechanics/small_strain_mech.h"
 #include "../SmallStrainMechanics/material_laws/hooke.h"
 
-#define WITH_JSON
-#ifdef WITH_JSON
+#ifdef UG_JSON
 #include <nlohmann/json.hpp>
 #endif
 
@@ -147,7 +146,7 @@ public:
 	number get_beta() const { return m_beta_uzawa; }
 	void set_beta(number beta) { m_beta_uzawa = beta; }
 
-#ifdef WITH_JSON
+#ifdef UG_JSON
 	friend void from_json(const nlohmann::json& j, BiotSubsetParameters& p);
 #endif
 
@@ -164,7 +163,7 @@ protected:
 	number m_beta_uzawa;
 };
 
-#ifdef WITH_JSON
+#ifdef UG_JSON
 void to_json(nlohmann::json &j, const BiotSubsetParameters &p);
 void from_json(const nlohmann::json &j, BiotSubsetParameters &p);
 #endif
@@ -281,6 +280,16 @@ public:
 
 		}
 
+		//! Reset pressure disc (for consistent initial values)
+		void ResetPressureDisc()
+		{
+			flowEqDisc->set_mass(1.0);
+			flowEqDisc->set_mass_scale(0.0); 	 
+			flowEqDisc->set_diffusion(0.0);
+		}
+
+
+
 
 
 };
@@ -305,6 +314,16 @@ public:
 		biot->CreateElemDiscs(param, m_config);
 		return biot;
 	}
+
+	// Create new disc container.
+	SmartPtr<TBiotDisc> create_elem_discs_for_consistency(const BiotSubsetParameters &param) const
+	{
+		SmartPtr<TBiotDisc>  biot = make_sp(new TBiotDisc ());
+		biot->CreateElemDiscs(param, m_config);
+		biot->ResetPressureDisc();
+		return biot;
+	}
+	
 protected:
 	// BiotDiscConfig& config() {return m_config;}
 	const BiotDiscConfig& config() {return m_config;} const
@@ -368,7 +387,7 @@ public:
 	void add_subset_parameters(const BiotSubsetParameters &p)
 	{ m_params.push_back(p); }
 
-#ifdef WITH_JSON
+#ifdef UG_JSON
 	/// Allows adding descriptions.
 	void add_subset_parameters(const char* &json_string)
 	{
@@ -412,7 +431,6 @@ public:
 		typedef BiotElemDiscFactory<TDomain> TBiotElemDiscFactory;
 		typedef BiotElemDisc<TDomain> TBiotElemDisc;
 
-
 		BiotDiscConfig conf = config();
 		conf.m_bSteadyStateMechanics = bSteadyStateMechanics;
 
@@ -420,14 +438,12 @@ public:
 
 		// Iterate over parameter sets.
 		std::vector<BiotSubsetParameters>::iterator it;
-		for(it = m_params.begin(); it != m_params.end(); it++)    {
-
+		for(it = m_params.begin(); it != m_params.end(); it++)    
+		{
 			// Create elem discs and add
 			SmartPtr<TBiotElemDisc> biot = elemDiscFactory.create_elem_discs(*it);
-
-			dd->add(biot->pressure_disc().template cast_dynamic<TElemDisc>());
 			dd->add(biot->displacement_disc().template cast_dynamic<TElemDisc>());
-
+			dd->add(biot->pressure_disc().template cast_dynamic<TElemDisc>());
 		}
 	}
 
@@ -489,7 +505,7 @@ protected:
 };
 
 
-#ifdef WITH_JSON
+#ifdef UG_JSON
 template <typename TDomain, typename TAlgebra>
 void to_json(nlohmann::json &j, const BiotProblem<TDomain,TAlgebra> &p);
 

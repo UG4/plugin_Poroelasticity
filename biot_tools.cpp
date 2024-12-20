@@ -42,7 +42,7 @@ double BesselJ0(double x)
 double BesselJ1(double x)
 { return boost::math::cyl_bessel_j(1, x); }
 
-#ifdef WITH_JSON
+#ifdef UG_JSON
 /**
 {
 	"subsets" = "subset1, subset2",
@@ -80,6 +80,8 @@ void from_json(const nlohmann::json &j, BiotSubsetParameters &p) {
 /** Value: $ \frac{l^2}{\kappa (\lambda + 2* \mu)}$ */
 double DefaultCharTime(const BiotSubsetParameters& p, double length)
 {
+
+#ifdef UG_JSON
 	nlohmann::json json;
 	to_json(json, p);
 
@@ -87,6 +89,7 @@ double DefaultCharTime(const BiotSubsetParameters& p, double length)
 	ss << json;
 
 	UG_LOG("JSON = "<< ss.str() << std::endl);
+#endif
 	double consolidation = p.get_kappa()* (p.get_lambda() + 2*p.get_mu());
 	return (length*length)/consolidation;
 }

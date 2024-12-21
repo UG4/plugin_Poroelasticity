@@ -279,15 +279,22 @@ public:
 	{ u->set(0.0); }
 
 	//! Add all boundary conditions.
-	virtual void add_boundary_conditions(SmartPtr<TDomainDisc> dd, bool bSteadyStateMechanics=true) override
+	virtual void add_boundary_conditions_u(SmartPtr<TDomainDisc> dd) override
+	{
+		SmartPtr<TDirichletBoundary> m_spDirichlet = make_sp(new TDirichletBoundary(false));
+		m_spDirichlet->add(0.0, "ux", "HORIZONTAL,CORNERS");
+		m_spDirichlet->add(0.0, "uy", "VERTICAL,CORNERS");
+		dd->add(m_spDirichlet.template cast_static<typename TDirichletBoundary::base_type> ());
+	}
+
+	//! Add all boundary conditions.
+	virtual void add_boundary_conditions_p(SmartPtr<TDomainDisc> dd) override
 	{
 		SmartPtr<TDirichletBoundary> m_spDirichlet = make_sp(new TDirichletBoundary(false));
 		m_spDirichlet->add(0.0, "p", "VERTICAL,HORIZONTAL,CORNERS");
-		m_spDirichlet->add(0.0, "ux", "HORIZONTAL,CORNERS");
-		m_spDirichlet->add(0.0, "uy", "VERTICAL,CORNERS");
-
 		dd->add(m_spDirichlet.template cast_static<typename TDirichletBoundary::base_type> ());
 	}
+
 
 
 	/// Post-processing (per time step)

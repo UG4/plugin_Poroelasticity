@@ -280,7 +280,7 @@ public:
 
 		}
 
-		//! Reset pressure disc (for consistent initial values)
+		//! Reset pressure disc to identity (for consistent initial values)
 		void ResetPressureDisc()
 		{
 			flowEqDisc->set_mass(1.0);
@@ -315,7 +315,7 @@ public:
 		return biot;
 	}
 
-	// Create new disc container.
+	// Create new disc container. Pressure disc is identity.
 	SmartPtr<TBiotDisc> create_elem_discs_for_consistency(const BiotSubsetParameters &param) const
 	{
 		SmartPtr<TBiotDisc>  biot = make_sp(new TBiotDisc ());
@@ -425,7 +425,7 @@ public:
 
 
 	/// Adding all elem discs to domain disc.
-	virtual void add_elem_discs(SmartPtr<TDomainDisc> dd, bool bSteadyStateMechanics=true)
+	void add_elem_discs_general(SmartPtr<TDomainDisc> dd, bool bSteadyStateMechanics=true, bool bStaticFlow=false)
 	{
 		// Using factory to create elem discs.
 		typedef BiotElemDiscFactory<TDomain> TBiotElemDiscFactory;
@@ -446,6 +446,15 @@ public:
 			dd->add(biot->pressure_disc().template cast_dynamic<TElemDisc>());
 		}
 	}
+
+
+	virtual void add_elem_discs(SmartPtr<TDomainDisc> dd, bool bSteadyStateMechanics=true)
+	{	add_elem_discs_general(dd,bSteadyStateMechanics); }
+
+	virtual void add_elem_discs_with_static_pressure(SmartPtr<TDomainDisc> dd)
+	{	add_elem_discs_general(dd,true, true); }
+
+
 
 protected:
 	//! Add stabilizationto domain disc.
@@ -481,9 +490,20 @@ public:
 
 	}
 
-	//! This add all boundary conditions.
+	
+	//! Add boundary conditions for deformation.
+	virtual void add_boundary_conditions_u(SmartPtr<TDomainDisc> dd) = 0;
+	
+	//! Add boundary conditions for pressure.
+	virtual void add_boundary_conditions_p(SmartPtr<TDomainDisc> dd) = 0;
+
+	//! Add all boundary conditions.
 	virtual void add_boundary_conditions(SmartPtr<TDomainDisc> dd, bool bSteadyStateMechanics=true)
-	{}
+	{
+		add_boundary_conditions_u(dd);
+		add_boundary_conditions_p(dd);
+	}
+
 
 	//! Initial values
 	virtual void interpolate_start_values(SmartPtr<TGridFunction> u, double t0)

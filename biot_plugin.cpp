@@ -45,6 +45,7 @@
 
 // Plugin stuff
 #include "biot_tools.h"
+#include "biot_projection.h"
 #include "barry_mercer.h"
 
 using namespace std;
@@ -138,8 +139,8 @@ static void DomainAlgebra(Registry& reg, string grp)
 
 		string name = string("BiotProblem").append(suffix);
 		reg.add_class_<T>(name, grp)
-		   .template add_constructor<void (*)(const char*,const char*,const char*)>("ucmp(s)#pcmp(s)")
-		   .template add_constructor<void (*)(const BiotDiscConfig&, const char*)>("ucmp(s)#uorder#pcmp(s)#porder")
+		   //.template add_constructor<void (*)(const char*,const char*,const char*)>("ucmp(s)#pcmp(s)")
+		   //.template add_constructor<void (*)(const BiotDiscConfig&, const char*)>("ucmp(s)#uorder#pcmp(s)#porder")
 		   .add_method("get_uorder", &T::get_uorder)
 		   .add_method("get_porder", &T::get_porder)
 		   .add_method("get_gridname", &T::get_gridname)
@@ -147,14 +148,30 @@ static void DomainAlgebra(Registry& reg, string grp)
 		   .add_method("start_time", &T::start_time)
 		   .add_method("end_time", &T::end_time)
 		   .add_method("add_elem_discs", &T::add_elem_discs)
+		   .add_method("add_elem_discs_with_static_pressure", &T::add_elem_discs_with_static_pressure)
 		   //.add_method("add_stab_discs", &T::add_stab_discs)
 		   .add_method("add_uzawa_discs", &T::add_uzawa_discs)
 		   .add_method("interpolate_start_values", &T::interpolate_start_values)
 		   .add_method("post_processing", &T::post_processing)
 		 //  .add_method("add_uzawa_discs", &T::add_uzawa_discs)
+		   .add_method("add_boundary_conditions_u", static_cast<void (T::*)(SmartPtr<typename T::TDomainDisc>)> (&T::add_boundary_conditions_u))
+		   .add_method("add_boundary_conditions_p", static_cast<void (T::*)(SmartPtr<typename T::TDomainDisc>)> (&T::add_boundary_conditions_p))
 		   .add_method("add_boundary_conditions", static_cast<void (T::*)(SmartPtr<typename T::TDomainDisc>, bool)> (&T::add_boundary_conditions))
 		   .set_construct_as_smart_pointer(true);
 		reg.add_class_to_group(name, "BiotProblem", tag);
+
+	}
+	{
+		using T=BiotProjection<TDomain, TAlgebra>;
+		// using TDomainDisc = typename T::TDomainDisc;
+	
+
+		string name = string("BiotProjection").append(suffix);
+		reg.add_class_<T>(name, grp)
+			.template add_constructor<void (*)(SmartPtr<typename T::TDomainDisc>, SmartPtr<typename T::TSolver>)> ("Domain disc")
+		   	.add_method("apply", &T::apply)
+		   	.set_construct_as_smart_pointer(true);
+		reg.add_class_to_group(name, "BiotProjection", tag);
 
 	}
 
@@ -192,7 +209,7 @@ static void Domain(Registry& reg, string grp)
 			   .set_construct_as_smart_pointer(true);
 			reg.add_class_to_group(name, "BiotElemDisc", tag);
 
-		}
+	}
 	{
 		typedef BiotElemDiscFactory<TDomain> T;
 		typedef IElemDisc<TDomain> TElemDisc;
@@ -202,6 +219,7 @@ static void Domain(Registry& reg, string grp)
 			.template add_constructor<void (*)(const char*, int,
 					const char*, int, bool)>("")
 			.add_method("create_elem_discs", &T::create_elem_discs)
+			.add_method("create_elem_discs_for_consistency", &T::create_elem_discs_for_consistency)
 		.set_construct_as_smart_pointer(true);
 		reg.add_class_to_group(name, "BiotElemDiscFactory", tag);
 

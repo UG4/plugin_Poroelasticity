@@ -71,17 +71,21 @@ double BesselJ1(double x);
 struct BiotDiscConfig
 {
 	BiotDiscConfig(const char* uCmp, const char *pCmp)
-	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(2), m_pOrder(1), m_dStab(0.0), m_bSteadyStateMechanics(true)
+	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(2), m_pOrder(1), m_dStab(0.0),
+	 m_bSteadyStateMechanics(true), m_identityFlow(false)
 	{}
 
 	BiotDiscConfig(const char* uCmp, int uorder, const char *pCmp, int porder)
-	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(uorder), m_pOrder(porder), m_dStab(0.0), m_bSteadyStateMechanics(true) {}
+	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(uorder), m_pOrder(porder), m_dStab(0.0),
+	 m_bSteadyStateMechanics(true), m_identityFlow(false)  {}
 
 	BiotDiscConfig(const char* uCmp, int uorder, const char *pCmp, int porder, double dStab)
-	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(uorder), m_pOrder(porder), m_dStab(dStab), m_bSteadyStateMechanics(true) {}
+	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(uorder), m_pOrder(porder), m_dStab(dStab), 
+	m_bSteadyStateMechanics(true), m_identityFlow(false) {}
 
 	BiotDiscConfig(const char* uCmp, int uorder, const char *pCmp, int porder, bool bSteadyStateMechanics)
-	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(uorder), m_pOrder(porder), m_dStab(0.0), m_bSteadyStateMechanics(bSteadyStateMechanics) {}
+	: m_uCmp(uCmp), m_pCmp(pCmp), m_uOrder(uorder), m_pOrder(porder), m_dStab(0.0), 
+	m_bSteadyStateMechanics(bSteadyStateMechanics), m_identityFlow(false) {}
 
 
 	/// Stabilization parameter (from [0,1]).
@@ -96,6 +100,7 @@ struct BiotDiscConfig
 	double m_dStab;
 
 	bool m_bSteadyStateMechanics;
+	bool m_identityFlow;
 };
 
 //! Class for Biot parameters (per subset)
@@ -281,11 +286,17 @@ public:
 		}
 
 		//! Reset pressure disc to identity (for consistent initial values)
-		void ResetPressureDisc()
+		void SetPressureDiscIdentity()
 		{
-			flowEqDisc->set_mass(1.0);
-			flowEqDisc->set_mass_scale(0.0); 	 
+			flowEqDisc->set_mass(0.0);
+			flowEqDisc->set_mass_scale(1.0); 
 			flowEqDisc->set_diffusion(0.0);
+			//flowEqDisc->set_flux(ConstUserVector<dim>(0.0));
+			//flowEqDisc->set_velocity(ConstUserVector<dim>(0.0));
+			flowEqDisc->set_reaction_rate(0.0);
+			flowEqDisc->set_reaction(0.0);
+			flowEqDisc->set_source(0.0);
+
 		}
 
 
@@ -312,6 +323,9 @@ public:
 	{
 		SmartPtr<TBiotDisc>  biot = make_sp(new TBiotDisc ());
 		biot->CreateElemDiscs(param, m_config);
+
+		if (m_config.m_identityFlow) 
+		{ biot->SetPressureDiscIdentity(); }
 		return biot;
 	}
 
@@ -320,7 +334,7 @@ public:
 	{
 		SmartPtr<TBiotDisc>  biot = make_sp(new TBiotDisc ());
 		biot->CreateElemDiscs(param, m_config);
-		biot->ResetPressureDisc();
+		biot->SetPressureDiscIdentity();
 		return biot;
 	}
 	
@@ -425,7 +439,7 @@ public:
 
 
 	/// Adding all elem discs to domain disc.
-	void add_elem_discs_general(SmartPtr<TDomainDisc> dd, bool bSteadyStateMechanics=true, bool bStaticFlow=false)
+	void add_elem_discs_general(SmartPtr<TDomainDisc> dd, bool bSteadyStateMechanics=true, bool bIdentityFlow=false)
 	{
 		// Using factory to create elem discs.
 		typedef BiotElemDiscFactory<TDomain> TBiotElemDiscFactory;
@@ -433,6 +447,7 @@ public:
 
 		BiotDiscConfig conf = config();
 		conf.m_bSteadyStateMechanics = bSteadyStateMechanics;
+		conf.m_identityFlow = bIdentityFlow;
 
 		BiotElemDiscFactory<TDomain> elemDiscFactory(conf);
 
@@ -452,7 +467,7 @@ public:
 	{	add_elem_discs_general(dd,bSteadyStateMechanics); }
 
 	virtual void add_elem_discs_with_static_pressure(SmartPtr<TDomainDisc> dd)
-	{	add_elem_discs_general(dd,true, true); }
+	{	add_elem_discs_general(dd, true, true); }
 
 
 

@@ -43,7 +43,7 @@ set(SOURCES	biot_tools.cpp barry_mercer_data.cpp biot_plugin.cpp)
 ################################################################################
 # The code below doesn't have to be changed (usually)
 ################################################################################
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6...4.4)
 
 
 
